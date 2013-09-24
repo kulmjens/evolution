@@ -1,7 +1,7 @@
 <?php
 /** 
  * ddGetMultipleField.php
- * @version 2.16.2 (2013-07-11)
+ * @version 2.17 (2013-09-18)
  * 
  * A snippet for separated by delimiters data output.
  * The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
@@ -15,7 +15,7 @@
  * @param $splY {string; regexp} - Input data rows delimiter. Default: '||'.
  * @param $splX {string; regexp} - Input data columns delimiter. Default: '::'.
  * @param $num {integer} - Row number to start. Default: 0.
- * @param $vals {separated string} - Rows IDs (the first column values) getting of which is required. Format: string separated by '||' between values. Default: ''.
+ * @param $vals {separated string} - Filters to apply to columns values. Thus, if the parameter equals '0::a||0::b||1::1', only the rows containing 'a' or 'b' in the zero column and '1' in the first one will be return. Zero column index can be skipped, e.g. 'a||b||1::1' == '0::a||0::b||1::1'. Default: ''.
  * @param $count {integer; 'all'} - Number of rows to return. Default: 'all'.
  * @param $colNum {comma separated string; 'all'} - Numbers of columns to return. Default: 'all'.
  * @param $sortDir {'ASC'; 'DESC'; 'RAND'; 'REVERSE'; ''} - Sorting direction. Default: ''.
@@ -34,7 +34,7 @@
  * @param $totalPlaceholder {string} - The name of an external placeholder to output the total number of rows into. The total number does not return if the parameter is empty. Default: ''.
  * @param $resultToPlaceholder {0; 1} - Add the obtained result to the placeholder 'ddGetMultipleField' instead of return. Default: 0.
  * 
- * @link http://code.divandesign.biz/modx/ddgetmultiplefield/2.16.2
+ * @link http://code.divandesign.biz/modx/ddgetmultiplefield/2.17
  * 
  * @copyright 2013, DivanDesign
  * http://www.DivanDesign.biz
@@ -56,7 +56,36 @@ if (isset($field) && $field != ""){
 	$splYisRegexp = (filter_var($splY, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^\/.*\/[a-z]*$/'))) !== false) ? true : false;
 	$splXisRegexp = (filter_var($splX, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^\/.*\/[a-z]*$/'))) !== false) ? true : false;
 	$num = (!isset($num) || !is_numeric($num)) ? '0' : $num;
-	$vals = isset($vals) ? explode('||', $vals) : false;
+	
+	//Если заданы условия фильтрации
+	if (!empty($vals)){
+		//Разбиваем по условиям
+		$temp = explode('||', $vals);
+		
+		$vals = array();
+		
+		foreach ($temp as $val){
+			//Разбиваем по колонке/значению
+			$val = explode('::', $val);
+			
+			//Если указали просто значение (значит, это нулевая колонка)
+			if (count($val) < 2){
+				$val[1] = $val[0];
+				$val[0] = '0';
+			}
+			
+			//Если ни одно правило для этой колонки ещй не задано
+			if (!isset($vals[$val[0]])){
+				$vals[$val[0]] = array();
+			}
+			
+			//Добавляем правило для соответствующей колонки
+			$vals[$val[0]][] = $val[1];
+		}
+	}else{
+		$vals = false;
+	}
+	
 	$count = (!isset($count) || !is_numeric($count)) ? 'all' : $count;
 	$colNum = isset($colNum) ? explode(',', $colNum) : 'all';
 	//Хитро-мудро для array_intersect_key
@@ -82,8 +111,15 @@ if (isset($field) && $field != ""){
 		
 		//Если необходимо получить какие-то конкретные значения
 		if ($vals){
-			//Если текущего значения в списке нет, сносим нафиг
-			if (!in_array($res[$key][0], $vals)) unset($res[$key]);
+			//Перебираем колонки для фильтрации
+			foreach ($vals as $col_k => $col_v){
+				//Если текущего значения в списке нет, сносим нафиг
+				if (!in_array($res[$key][$col_k], $col_v)){
+					unset($res[$key]);
+					//Уходим (строку уже снесли, больше ничего не важно)
+					break;
+				}
+			}
 		}
 		
 		//Если нужно получить какую-то конкретную колонку (также проверяем на то, что строка вообще существует, т.к. она могла быть уже удалена ранее)
