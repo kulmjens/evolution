@@ -341,9 +341,9 @@ if (isset($field) && $field != ""){
 						$val = explode('::', $val);
 						$res[$val[0]] = $val[1];
 					}
-					
-					$res['total'] = $resLength;
 				}
+				
+				$res['total'] = $resLength;
 				$result = $modx->parseChunk($tplWrap, $res, '[+','+]');
 			}
 	
