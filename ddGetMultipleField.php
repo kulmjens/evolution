@@ -236,11 +236,11 @@ if (isset($field) && $field != ""){
 		}
 		
 		//Общее количество строк
-		$resLength = count($res);
+		$resultTotal = count($res);
 		
 		//Плэйсхолдер с общим количеством
 		if (isset($totalPlaceholder) && strlen(trim($totalPlaceholder)) != ''){
-			$modx->setPlaceholder($totalPlaceholder, $resLength);
+			$modx->setPlaceholder($totalPlaceholder, $resultTotal);
 		}
 		
 		//Если вывод в массив
@@ -278,7 +278,7 @@ if (isset($field) && $field != ""){
 						//Запишем номер строки
 						$res[$key]['row_number'] = $key + 1;
 						//И общее количество элементов
-						$res[$key]['total'] = $resLength;
+						$res[$key]['total'] = $resultTotal;
 						$res[$key] = $modx->parseChunk($tplY, $res[$key], '[+', '+]');
 					}
 				}else{
@@ -343,7 +343,7 @@ if (isset($field) && $field != ""){
 					}
 				}
 				
-				$res['total'] = $resLength;
+				$res['total'] = $resultTotal;
 				$result = $modx->parseChunk($tplWrap, $res, '[+','+]');
 			}
 	
