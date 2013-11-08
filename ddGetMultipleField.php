@@ -27,9 +27,9 @@
  * @param $typographing {0; 1} - Typographing status. Default: 0.
  * @param $urlencode {0; 1} - URL encoding status. Default: 0.
  * @param $format {'JSON'; 'array'; 'html'} - Format being returned. Default: 'html'.
- * @param $tplY {string: chunkName} - Row output template (the format parameter must be empty). Available placeholders: [+row_number+] (returns row number starting from 1), [+total+] (the number of all rows), [+val0+],[+val1+],…. Default: ''.
+ * @param $tplY {string: chunkName} - Row output template (the format parameter must be empty). Available placeholders: [+row_number+] (returns row number starting from 1), [+total+] (the number of all rows), [+resultTotal+] (the number of outputted rows), [+val0+],[+val1+],…. Default: ''.
  * @param $tplX {comma separated string: chunkName; 'null'} - List of templates for columns output separated by comma. The last template would be applied to other rows if the number of templates was less than the number of columns. The 'null' value — without a template. Available placeholder: [+val+]. Default: ''.
- * @param $tplWrap {string: chunkName} - Wrapper template. Available placeholders: [+wrapper+], [+total+]. Default: ''.
+ * @param $tplWrap {string: chunkName} - Wrapper template. Available placeholders: [+wrapper+], [+total+] (the number of all rows), [+resultTotal+] (the number of outputted rows). Default: ''.
  * @param $placeholders {separated string} - Additional data which has to be transferred (available only in tplWrap!). Format: string separated by '::' betweeb key-value pair and '||' between pairs. Default: ''.
  * @param $totalPlaceholder {string} - The name of an external placeholder to output the total number of rows into. The total number does not return if the parameter is empty. Default: ''.
  * @param $resultToPlaceholder {0; 1} - Add the obtained result to the placeholder 'ddGetMultipleField' instead of return. Default: 0.
@@ -104,6 +104,9 @@ if (isset($field) && $field != ""){
 	
 	//Разбиваем на строки
 	$res = $splYisRegexp ? preg_split($splY, $field) : explode($splY, $field);
+
+	//Общее количество строк
+	$total = count($res);
 	
 	//Перебираем строки, разбиваем на колонки
 	foreach ($res as $key => $val){
@@ -235,7 +238,7 @@ if (isset($field) && $field != ""){
 			$res = array_slice($res, $num, $count);
 		}
 		
-		//Общее количество строк
+		//Общее количество возвращаемых строк
 		$resultTotal = count($res);
 		
 		//Плэйсхолдер с общим количеством
@@ -278,7 +281,8 @@ if (isset($field) && $field != ""){
 						//Запишем номер строки
 						$res[$key]['row_number'] = $key + 1;
 						//И общее количество элементов
-						$res[$key]['total'] = $resultTotal;
+						$res[$key]['total'] = $total;
+						$res[$key]['resultTotal'] = $resultTotal;
 						$res[$key] = $modx->parseChunk($tplY, $res[$key], '[+', '+]');
 					}
 				}else{
@@ -343,7 +347,8 @@ if (isset($field) && $field != ""){
 					}
 				}
 				
-				$res['total'] = $resultTotal;
+				$res['total'] = $total;
+				$res['resultTotal'] = $resultTotal;
 				$result = $modx->parseChunk($tplWrap, $res, '[+','+]');
 			}
 	
