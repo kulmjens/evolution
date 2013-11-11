@@ -353,14 +353,7 @@ if (isset($field) && $field != ""){
 				
 				//Если есть дополнительные данные
 				if (isset($placeholders)){
-					$arrPlaceholders = array();
-					//Разбиваем по парам
-					$placeholders = explode('||', $placeholders);
-					foreach ($placeholders as $val){
-						//Разбиваем на ключ-значение
-						$val = explode('::', $val);
-						$resTemp[$val[0]] = $val[1];
-					}
+					$resTemp = array_merge($resTemp, ddTools::explodeAssoc($placeholders));
 				}
 				
 				$resTemp['total'] = $total;
