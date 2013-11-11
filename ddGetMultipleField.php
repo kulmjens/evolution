@@ -1,11 +1,12 @@
 <?php
 /** 
  * ddGetMultipleField.php
- * @version 2.17 (2013-09-18)
+ * @version 2.18 (2013-11-11)
  * 
  * A snippet for separated by delimiters data output.
  * The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
  * 
+ * @uses The library modx.ddTools 0.10.
  * @uses The snippet ddGetDocumentField 2.4 might be used if field getting is required.
  * @uses The snippet ddTypograph 1.4.3 (if typographing is required).
  * 
@@ -27,14 +28,14 @@
  * @param $typographing {0; 1} - Typographing status. Default: 0.
  * @param $urlencode {0; 1} - URL encoding status. Default: 0.
  * @param $format {'JSON'; 'array'; 'html'} - Format being returned. Default: 'html'.
- * @param $tplY {string: chunkName} - Row output template (the format parameter must be empty). Available placeholders: [+row_number+] (returns row number starting from 1), [+total+] (the number of all rows), [+val0+],[+val1+],…. Default: ''.
+ * @param $tplY {string: chunkName} - Row output template (the format parameter must be empty). Available placeholders: [+row_number+] (returns row number starting from 1), [+total+] (the number of all rows), [+resultTotal+] (the number of outputted rows), [+val0+],[+val1+],…. Default: ''.
  * @param $tplX {comma separated string: chunkName; 'null'} - List of templates for columns output separated by comma. The last template would be applied to other rows if the number of templates was less than the number of columns. The 'null' value — without a template. Available placeholder: [+val+]. Default: ''.
- * @param $tplWrap {string: chunkName} - Wrapper template. Available placeholders: [+wrapper+], [+total+]. Default: ''.
+ * @param $tplWrap {string: chunkName} - Wrapper template. Available placeholders: [+wrapper+], [+total+] (the number of all rows), [+resultTotal+] (the number of outputted rows). Default: ''.
  * @param $placeholders {separated string} - Additional data which has to be transferred (available only in tplWrap!). Format: string separated by '::' betweeb key-value pair and '||' between pairs. Default: ''.
  * @param $totalPlaceholder {string} - The name of an external placeholder to output the total number of rows into. The total number does not return if the parameter is empty. Default: ''.
  * @param $resultToPlaceholder {0; 1} - Add the obtained result to the placeholder 'ddGetMultipleField' instead of return. Default: 0.
  * 
- * @link http://code.divandesign.biz/modx/ddgetmultiplefield/2.17
+ * @link http://code.divandesign.biz/modx/ddgetmultiplefield/2.18
  * 
  * @copyright 2013, DivanDesign
  * http://www.DivanDesign.biz
@@ -104,6 +105,9 @@ if (isset($field) && $field != ""){
 	
 	//Разбиваем на строки
 	$res = $splYisRegexp ? preg_split($splY, $field) : explode($splY, $field);
+
+	//Общее количество строк
+	$total = count($res);
 	
 	//Перебираем строки, разбиваем на колонки
 	foreach ($res as $key => $val){
@@ -235,18 +239,20 @@ if (isset($field) && $field != ""){
 			$res = array_slice($res, $num, $count);
 		}
 		
-		//Общее количество строк
-		$resLength = count($res);
+		//Общее количество возвращаемых строк
+		$resultTotal = count($res);
 		
 		//Плэйсхолдер с общим количеством
 		if (isset($totalPlaceholder) && strlen(trim($totalPlaceholder)) != ''){
-			$modx->setPlaceholder($totalPlaceholder, $resLength);
+			$modx->setPlaceholder($totalPlaceholder, $resultTotal);
 		}
 		
 		//Если вывод в массив
 		if ($format == 'array'){
 			$result = $res;
 		}else{
+			$resTemp = array();
+			
 			//Если вывод просто в формате html
 			if ($format == 'html'){
 				/*//Если вывод в формате изображения
@@ -260,26 +266,27 @@ if (isset($field) && $field != ""){
 				if (isset($tplY)){
 					//Перебираем строки
 					foreach ($res as $key => $val){
-						$res[$key] = array();
+						$resTemp[$key] = array();
 						//Перебираем колонки
 						foreach ($val as $k => $v){
 							//Если нужно удалять пустые значения
 							if ($removeEmptyCols && !strlen($v)){
-								$res[$key]['val'.$k] = '';
+								$resTemp[$key]['val'.$k] = '';
 							}else{
 								//Если есть шаблоны значений колонок
 								if ($tplX && strlen($tplX[$k])){
-									$res[$key]['val'.$k] = $modx->parseChunk($tplX[$k], array('val' => $v), '[+', '+]');
+									$resTemp[$key]['val'.$k] = $modx->parseChunk($tplX[$k], array('val' => $v), '[+', '+]');
 								}else{
-									$res[$key]['val'.$k] = $v;
+									$resTemp[$key]['val'.$k] = $v;
 								}
 							}
 						}
 						//Запишем номер строки
-						$res[$key]['row_number'] = $key + 1;
+						$resTemp[$key]['row_number'] = $key + 1;
 						//И общее количество элементов
-						$res[$key]['total'] = $resLength;
-						$res[$key] = $modx->parseChunk($tplY, $res[$key], '[+', '+]');
+						$resTemp[$key]['total'] = $total;
+						$resTemp[$key]['resultTotal'] = $resultTotal;
+						$resTemp[$key] = $modx->parseChunk($tplY, $resTemp[$key], '[+', '+]');
 					}
 				}else{
 					foreach ($res as $key => $val){
@@ -294,11 +301,11 @@ if (isset($field) && $field != ""){
 								}
 							}
 						}
-						$res[$key] = implode($glueX, $val);
+						$resTemp[$key] = implode($glueX, $val);
 					}
 				}
 				
-				$result = implode($glueY, $res);
+				$result = implode($glueY, $resTemp);
 			//Если вывод в формате JSON
 			}else if ($format == 'json'){
 				//Добавляем 'val' к названиям колонок
@@ -308,16 +315,18 @@ if (isset($field) && $field != ""){
 					foreach ($val as $k => $v) $res[$key]['val'.$k] = $v;
 				} */
 				
+				$resTemp = $res;
+				
 				//Если нужно выводить только одну колонку
 				if ($colNum != 'all' && count($colNum) == 1){
-					$res = array_map('implode', $res);
+					$resTemp = array_map('implode', $resTemp);
 				}
 				
 				//Если нужно получить какой-то конкретный элемент, а не все
 				if ($count == '1'){
-					$result = json_encode($res[$num]);
+					$result = json_encode($resTemp[$num]);
 				}else{
-					$result = json_encode($res);
+					$result = json_encode($resTemp);
 				}
 				
 				//Это чтобы модекс не воспринимал как вызов сниппета
@@ -326,25 +335,30 @@ if (isset($field) && $field != ""){
 			
 			//Если оборачивающий шаблон задан (и вывод не в массив), парсим его
 			if (isset($tplWrap)){
-				$res = array();
+				//Подключаем modx.ddTools
+				require_once $modx->config['base_path'].'assets/snippets/ddTools/modx.ddtools.class.php';
+				
+				$resTemp = array();
 				
 				//Элемент массива 'wrapper' должен находиться самым первым, иначе дополнительные переданные плэйсхолдеры в тексте не найдутся! 
-				$res['wrapper'] = $result;
+				$resTemp['wrapper'] = $result;
+				
+				//Преобразуем результат в одномерный массив
+				$res = ddTools::unfoldArray($res);
+				
+				//Добавляем 'row' и 'val' к ключам
+				foreach ($res as $key => $val){
+					 $resTemp[preg_replace('/(\d)\.(\d)/', 'row$1.val$2', $key)] = $val;
+				}
 				
 				//Если есть дополнительные данные
 				if (isset($placeholders)){
-					$arrPlaceholders = array();
-					//Разбиваем по парам
-					$placeholders = explode('||', $placeholders);
-					foreach ($placeholders as $val){
-						//Разбиваем на ключ-значение
-						$val = explode('::', $val);
-						$res[$val[0]] = $val[1];
-					}
-					
-					$res['total'] = $resLength;
+					$resTemp = array_merge($resTemp, ddTools::explodeAssoc($placeholders));
 				}
-				$result = $modx->parseChunk($tplWrap, $res, '[+','+]');
+				
+				$resTemp['total'] = $total;
+				$resTemp['resultTotal'] = $resultTotal;
+				$result = $modx->parseChunk($tplWrap, $resTemp, '[+','+]');
 			}
 	
 			//Если нужно типографировать
