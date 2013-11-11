@@ -6,6 +6,7 @@
  * A snippet for separated by delimiters data output.
  * The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
  * 
+ * @uses The library modx.ddTools 0.10.
  * @uses The snippet ddGetDocumentField 2.4 might be used if field getting is required.
  * @uses The snippet ddTypograph 1.4.3 (if typographing is required).
  * 
@@ -250,6 +251,8 @@ if (isset($field) && $field != ""){
 		if ($format == 'array'){
 			$result = $res;
 		}else{
+			$resTemp = array();
+			
 			//Если вывод просто в формате html
 			if ($format == 'html'){
 				/*//Если вывод в формате изображения
@@ -263,27 +266,27 @@ if (isset($field) && $field != ""){
 				if (isset($tplY)){
 					//Перебираем строки
 					foreach ($res as $key => $val){
-						$res[$key] = array();
+						$resTemp[$key] = array();
 						//Перебираем колонки
 						foreach ($val as $k => $v){
 							//Если нужно удалять пустые значения
 							if ($removeEmptyCols && !strlen($v)){
-								$res[$key]['val'.$k] = '';
+								$resTemp[$key]['val'.$k] = '';
 							}else{
 								//Если есть шаблоны значений колонок
 								if ($tplX && strlen($tplX[$k])){
-									$res[$key]['val'.$k] = $modx->parseChunk($tplX[$k], array('val' => $v), '[+', '+]');
+									$resTemp[$key]['val'.$k] = $modx->parseChunk($tplX[$k], array('val' => $v), '[+', '+]');
 								}else{
-									$res[$key]['val'.$k] = $v;
+									$resTemp[$key]['val'.$k] = $v;
 								}
 							}
 						}
 						//Запишем номер строки
-						$res[$key]['row_number'] = $key + 1;
+						$resTemp[$key]['row_number'] = $key + 1;
 						//И общее количество элементов
-						$res[$key]['total'] = $total;
-						$res[$key]['resultTotal'] = $resultTotal;
-						$res[$key] = $modx->parseChunk($tplY, $res[$key], '[+', '+]');
+						$resTemp[$key]['total'] = $total;
+						$resTemp[$key]['resultTotal'] = $resultTotal;
+						$resTemp[$key] = $modx->parseChunk($tplY, $resTemp[$key], '[+', '+]');
 					}
 				}else{
 					foreach ($res as $key => $val){
@@ -298,11 +301,11 @@ if (isset($field) && $field != ""){
 								}
 							}
 						}
-						$res[$key] = implode($glueX, $val);
+						$resTemp[$key] = implode($glueX, $val);
 					}
 				}
 				
-				$result = implode($glueY, $res);
+				$result = implode($glueY, $resTemp);
 			//Если вывод в формате JSON
 			}else if ($format == 'json'){
 				//Добавляем 'val' к названиям колонок
@@ -312,16 +315,18 @@ if (isset($field) && $field != ""){
 					foreach ($val as $k => $v) $res[$key]['val'.$k] = $v;
 				} */
 				
+				$resTemp = $res;
+				
 				//Если нужно выводить только одну колонку
 				if ($colNum != 'all' && count($colNum) == 1){
-					$res = array_map('implode', $res);
+					$resTemp = array_map('implode', $resTemp);
 				}
 				
 				//Если нужно получить какой-то конкретный элемент, а не все
 				if ($count == '1'){
-					$result = json_encode($res[$num]);
+					$result = json_encode($resTemp[$num]);
 				}else{
-					$result = json_encode($res);
+					$result = json_encode($resTemp);
 				}
 				
 				//Это чтобы модекс не воспринимал как вызов сниппета
@@ -330,10 +335,21 @@ if (isset($field) && $field != ""){
 			
 			//Если оборачивающий шаблон задан (и вывод не в массив), парсим его
 			if (isset($tplWrap)){
-				$res = array();
+				//Подключаем modx.ddTools
+				require_once $modx->config['base_path'].'assets/snippets/ddTools/modx.ddtools.class.php';
+				
+				$resTemp = array();
 				
 				//Элемент массива 'wrapper' должен находиться самым первым, иначе дополнительные переданные плэйсхолдеры в тексте не найдутся! 
-				$res['wrapper'] = $result;
+				$resTemp['wrapper'] = $result;
+				
+				//Преобразуем результат в одномерный массив
+				$res = ddTools::unfoldArray($res);
+				
+				//Добавляем 'row' и 'val' к ключам
+				foreach ($res as $key => $val){
+					 $resTemp[preg_replace('/(\d)\.(\d)/', 'row$1.val$2', $key)] = $val;
+				}
 				
 				//Если есть дополнительные данные
 				if (isset($placeholders)){
@@ -343,13 +359,13 @@ if (isset($field) && $field != ""){
 					foreach ($placeholders as $val){
 						//Разбиваем на ключ-значение
 						$val = explode('::', $val);
-						$res[$val[0]] = $val[1];
+						$resTemp[$val[0]] = $val[1];
 					}
 				}
 				
-				$res['total'] = $total;
-				$res['resultTotal'] = $resultTotal;
-				$result = $modx->parseChunk($tplWrap, $res, '[+','+]');
+				$resTemp['total'] = $total;
+				$resTemp['resultTotal'] = $resultTotal;
+				$result = $modx->parseChunk($tplWrap, $resTemp, '[+','+]');
 			}
 	
 			//Если нужно типографировать
