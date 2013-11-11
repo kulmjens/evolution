@@ -1,7 +1,7 @@
 <?php
 /** 
  * ddGetMultipleField.php
- * @version 2.17 (2013-09-18)
+ * @version 2.18 (2013-11-11)
  * 
  * A snippet for separated by delimiters data output.
  * The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
@@ -35,7 +35,7 @@
  * @param $totalPlaceholder {string} - The name of an external placeholder to output the total number of rows into. The total number does not return if the parameter is empty. Default: ''.
  * @param $resultToPlaceholder {0; 1} - Add the obtained result to the placeholder 'ddGetMultipleField' instead of return. Default: 0.
  * 
- * @link http://code.divandesign.biz/modx/ddgetmultiplefield/2.17
+ * @link http://code.divandesign.biz/modx/ddgetmultiplefield/2.18
  * 
  * @copyright 2013, DivanDesign
  * http://www.DivanDesign.biz
