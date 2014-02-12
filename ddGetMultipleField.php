@@ -6,7 +6,7 @@
  * A snippet for separated by delimiters data output.
  * The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
  * 
- * @uses The library modx.ddTools 0.10.
+ * @uses The library modx.ddTools 0.11.
  * @uses The snippet ddGetDocumentField 2.4 might be used if field getting is required.
  * @uses The snippet ddTypograph 1.4.3 (if typographing is required).
  * 
@@ -40,6 +40,9 @@
  * @copyright 2013, DivanDesign
  * http://www.DivanDesign.biz
  */
+
+//Подключаем modx.ddTools
+require_once $modx->config['base_path'].'assets/snippets/ddTools/modx.ddtools.class.php';
 
 //Если задано имя поля, которое необходимо получить
 if (isset($getField)){
@@ -165,67 +168,8 @@ if (isset($field) && $field != ""){
 			}else if ($sortDir == 'REVERSE'){
 				$res = array_reverse($res);
 			}else{
-				if(!function_exists('ddMasHoarSort')){
-					/**
-					 * ddMasHoarSort
-					 * @version 1.1 (2013-07-11)
-					 * 
-					 * @desc Функция сортировки многомерного массива по методу Хоара (по нескольким полям одновременно).
-					 * 
-					 * @param $arr {array} - Исходный массив. @required
-					 * @param $key {array} - Массив ключей. @required
-					 * @param $direct {1; -1} - Направление сортировки. @required
-					 * @param $i {integer} - Счётчик (внутренняя переменная для рекурсии). По умолчанию: 0.
-					 * 
-					 * @return {array}
-					 */
-					function ddMasHoarSort($arr, $key, $direct, $i = 0){
-						//В качестве эталона получаем сортируемое значение (по первому условию сортировки) первого элемента
-						$tek = $arr[0][$key[$i]];
-						$tekIsNumeric = is_numeric($tek);
-						
-						$masLeft = array();
-						$masRight = array();
-						$masCent = array();
-						
-						//Перебираем массив
-						foreach ($arr as $val){
-							//Если эталон и текущее значение — числа
-							if ($tekIsNumeric && is_numeric($val[$key[$i]])){
-								//Получаем нужную циферку
-								$cmpRes = ($val[$key[$i]] == $tek) ? 0 : (($val[$key[$i]] > $tek) ? 1 : -1);
-							//Если они строки
-							}else{
-								//Сравниваем текущее значение со значением эталонного
-								$cmpRes = strcmp($val[$key[$i]], $tek);
-							}
-					
-							//Если меньше эталона, отбрасываем в массив меньших
-							if ($cmpRes * $direct < 0){
-								$masLeft[] = $val;
-							//Если больше - в массив больших
-							}else if ($cmpRes * $direct > 0){
-								$masRight[] = $val;
-							//Если раво - в центральный
-							}else{
-								$masCent[] = $val;
-							}
-						}
-						
-						//Массивы меньших и массивы больших прогоняем по тому же алгоритму (если в них что-то есть)
-						$masLeft = (count($masLeft) > 1) ? ddMasHoarSort($masLeft, $key, $direct, $i) : $masLeft;
-						$masRight = (count($masRight) > 1) ? ddMasHoarSort($masRight, $key, $direct, $i) : $masRight;
-						//Массив одинаковых прогоняем по следующему условию сортировки (если есть условие и есть что сортировать)
-						$masCent = ((count($masCent) > 1) && $key[$i + 1]) ? ddMasHoarSort($masCent, $key, $direct, $i + 1) : $masCent;
-					
-						//Склеиваем отсортированные меньшие, средние и большие
-						return array_merge($masLeft, $masCent, $masRight);
-					}
-				}
-				
 				//Сортируем результаты
-				$sortDir = ($sortDir == 'ASC') ? 1 : -1;
-				$res = ddMasHoarSort($res, explode(',', $sortBy), $sortDir);
+				$res = ddTools::sort2dArray($res, explode(',', $sortBy), ($sortDir == 'ASC') ? 1 : -1);
 			}
 		}
 		
@@ -335,9 +279,6 @@ if (isset($field) && $field != ""){
 			
 			//Если оборачивающий шаблон задан (и вывод не в массив), парсим его
 			if (isset($tplWrap)){
-				//Подключаем modx.ddTools
-				require_once $modx->config['base_path'].'assets/snippets/ddTools/modx.ddtools.class.php';
-				
 				$resTemp = array();
 				
 				//Элемент массива 'wrapper' должен находиться самым первым, иначе дополнительные переданные плэйсхолдеры в тексте не найдутся! 
