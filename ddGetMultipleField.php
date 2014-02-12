@@ -7,7 +7,6 @@
  * The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
  * 
  * @uses The library modx.ddTools 0.11.
- * @uses The snippet ddGetDocumentField 2.4 might be used if field getting is required.
  * @uses The snippet ddTypograph 1.4.3 (if typographing is required).
  * 
  * @param $field {separated string} - String contains values with delimeters. @required
@@ -46,10 +45,8 @@ require_once $modx->config['base_path'].'assets/snippets/ddTools/modx.ddtools.cl
 
 //Если задано имя поля, которое необходимо получить
 if (isset($getField)){
-	$field = $modx->runSnippet('ddGetDocumentField', array(
-		'id' => $getId,
-		'field' => $getField
-	));
+	$field = ddTools::getTemplateVarOutput(array($getField), $getId);
+	$field = $field[$getField];
 }
 
 //Если задано значение поля
