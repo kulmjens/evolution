@@ -24,7 +24,7 @@
  * @param $glueX {string} - Output data columns delimiter. Default: ''.
  * @param $removeEmptyRows {0; 1} - Rmoving empty rows status. Default: 1. 
  * @param $removeEmptyCols {0; 1} - Rmoving empty columns status. Default: 1.
- * @param $typographing {0; 1} - Typographing status. Default: 0.
+ * @param $typographing {comma separated string} - The comma separated indexes of the columns which values have to be corrected (indexes start at 0). If unset, there will be no correction. Default: —.
  * @param $urlencode {0; 1} - URL encoding status. Default: 0.
  * @param $format {'JSON'; 'array'; 'html'} - Format being returned. Default: 'html'.
  * @param $tplY {string: chunkName} - Row output template (the format parameter must be empty). Available placeholders: [+row_number+] (returns row number starting from 1), [+total+] (the number of all rows), [+resultTotal+] (the number of outputted rows), [+val0+],[+val1+],…. Default: ''.
@@ -97,7 +97,6 @@ if (isset($field) && $field != ""){
 	$glueX = isset($glueX) ? $glueX : '';
 	$removeEmptyRows = (isset($removeEmptyRows) && $removeEmptyRows == '0') ? false : true;
 	$removeEmptyCols = (isset($removeEmptyCols) && $removeEmptyCols == '0') ? false : true;
-	$typographing = (isset($typographing) && $typographing == '1') ? true : false;
 	$urlencode = (isset($urlencode) && $urlencode == '1') ? true : false;
 	$format = isset($format) ? strtolower($format) : 'html';
 	$tplX = isset($tplX) ? explode(',', $tplX) : false;
@@ -186,6 +185,22 @@ if (isset($field) && $field != ""){
 		//Плэйсхолдер с общим количеством
 		if (isset($totalPlaceholder) && strlen(trim($totalPlaceholder)) != ''){
 			$modx->setPlaceholder($totalPlaceholder, $resultTotal);
+		}
+		
+		//Если нужно типографировать
+		if (isset($typographing)){
+			$typographing = explode(',', $typographing);
+			
+			//Придётся ещё раз перебрать результат
+			foreach ($res as $key => $val){
+				//Перебираем колонки, заданные для типографирования
+				foreach ($typographing as $v){
+					//Если такая колонка существует, типографируем
+					if (isset($res[$key][$v])){
+						$res[$key][$v] = $modx->runSnippet('ddTypograph', array('text' => $res[$key][$v]));
+					}
+				}
+			}
 		}
 		
 		//Если вывод в массив
@@ -299,10 +314,6 @@ if (isset($field) && $field != ""){
 				$result = $modx->parseChunk($tplWrap, $resTemp, '[+','+]');
 			}
 	
-			//Если нужно типографировать
-			if ($typographing){
-				$result = $modx->runSnippet('ddTypograph', array('text' => $result));
-			}
 			//Если нужно URL-кодировать строку
 			if ($urlencode){
 				$result = rawurlencode($result);
