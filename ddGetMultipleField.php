@@ -32,7 +32,7 @@
  * @param $tplWrap {string: chunkName} - Wrapper template. Available placeholders: [+wrapper+], [+total+] (the number of all rows), [+resultTotal+] (the number of outputted rows). Default: ''.
  * @param $placeholders {separated string} - Additional data which has to be transferred (available only in tplWrap!). Format: string separated by '::' betweeb key-value pair and '||' between pairs. Default: ''.
  * @param $totalPlaceholder {string} - The name of an external placeholder to output the total number of rows into. The total number does not return if the parameter is empty. Default: ''.
- * @param $resultToPlaceholder {0; 1} - Add the obtained result to the placeholder 'ddGetMultipleField' instead of return. Default: 0.
+ * @param $resultToPlaceholder {string} - The name of the global MODX placeholder that holds the snippet result. The result will be returned in a regular manner if the parameter is empty. Default: ''.
  * 
  * @link http://code.divandesign.biz/modx/ddgetmultiplefield/2.18
  * 
@@ -100,7 +100,6 @@ if (isset($field) && $field != ""){
 	$urlencode = (isset($urlencode) && $urlencode == '1') ? true : false;
 	$format = isset($format) ? strtolower($format) : 'html';
 	$tplX = isset($tplX) ? explode(',', $tplX) : false;
-	$resultToPlaceholder = (isset($resultToPlaceholder) && $resultToPlaceholder == '1') ? true : false;
 	
 	//Разбиваем на строки
 	$res = $splYisRegexp ? preg_split($splY, $field) : explode($splY, $field);
@@ -322,8 +321,8 @@ if (isset($field) && $field != ""){
 	}
 	
 	//Если надо, выводим в плэйсхолдер
-	if ($resultToPlaceholder){
-		$modx->setPlaceholder('ddGetMultipleField', $result);
+	if (isset($resultToPlaceholder)){
+		$modx->setPlaceholder($resultToPlaceholder, $result);
 	}else{
 		return $result;
 	}
