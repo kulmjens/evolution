@@ -28,7 +28,7 @@
  * @param $colGlue {string} - The string that combines columns while rendering. It can be used along with “colTpl”, but not with “rowTpl” for obvious reasons. Default: ''.
  * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+col0+],[+col1+],… (column values). Default: ''.
  * @param $colTpl {comma separated string: chunkName; 'null'} - The comma-separated list of templates for column rendering (“outputFormat” has to be == 'html'). If the number of templates is lesser than the number of columns then the last passed template will be used to render the rest of the columns. 'null' specifies rendering without a template. Available placeholder: [+val+]. Default: ''.
- * @param $outerTpl {string: chunkName} - Wrapper template (“outputFormat” has to be != 'array'). Available placeholders: [+wrapper+], [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+rowY.colX+] (“Y” — row number, “X” — column number). Default: ''.
+ * @param $outerTpl {string: chunkName} - Wrapper template (“outputFormat” has to be != 'array'). Available placeholders: [+result+], [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+rowY.colX+] (“Y” — row number, “X” — column number). Default: ''.
  * @param $placeholders {separated string} - Additional data has to be passed into “outerTpl”. Syntax: string separated with '::' between key and value and '||' between key-value pairs. Default: ''.
  * @param $urlencode {0; 1} - Is it required to URL encode the result? “outputFormat” has to be != 'array'. URL encoding is used according to RFC 3986. Default: 0.
  * @param $totalRowsToPlaceholder {string} - The name of the global MODX placeholder that holds the total number of rows. The placeholder won't be set if “totalRowsToPlaceholder” is empty. Default: ''.
@@ -295,8 +295,8 @@ if (isset($string) && strlen($string) > 0){
 			if (isset($outerTpl)){
 				$resTemp = array();
 				
-				//Элемент массива 'wrapper' должен находиться самым первым, иначе дополнительные переданные плэйсхолдеры в тексте не найдутся! 
-				$resTemp['wrapper'] = $result;
+				//Элемент массива 'result' должен находиться самым первым, иначе дополнительные переданные плэйсхолдеры в тексте не найдутся! 
+				$resTemp['result'] = $result;
 				
 				//Преобразуем результат в одномерный массив
 				$res = ddTools::unfoldArray($res);
