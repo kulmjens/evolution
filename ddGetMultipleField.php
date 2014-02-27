@@ -26,7 +26,7 @@
  * @param $outputFormat {'html'; 'JSON'; 'array'} - Result output format. Default: 'html'.
  * @param $rowGlue {string} - The string that combines rows while rendering. It can be used along with “rowTpl”. Default: ''.
  * @param $colGlue {string} - The string that combines columns while rendering. It can be used along with “colTpl”, but not with “rowTpl” for obvious reasons. Default: ''.
- * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+row_number+] (index of current row, starts at 1), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+val0+],[+val1+],… (column values). Default: ''.
+ * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+val0+],[+val1+],… (column values). Default: ''.
  * @param $colTpl {comma separated string: chunkName; 'null'} - The comma-separated list of templates for column rendering (“outputFormat” has to be == 'html'). If the number of templates is lesser than the number of columns then the last passed template will be used to render the rest of the columns. 'null' specifies rendering without a template. Available placeholder: [+val+]. Default: ''.
  * @param $outerTpl {string: chunkName} - Wrapper template (“outputFormat” has to be != 'array'). Available placeholders: [+wrapper+], [+total+] (total number or rows), [+resultTotal+] (total number of returned rows). Default: ''.
  * @param $placeholders {separated string} - Additional data has to be passed into “outerTpl”. Syntax: string separated with '::' between key and value and '||' between key-value pairs. Default: ''.
@@ -241,7 +241,7 @@ if (isset($string) && strlen($string) > 0){
 						}
 						
 						//Запишем номер строки
-						$resTemp[$key]['row_number'] = $key + 1;
+						$resTemp[$key]['rowNumber'] = $key + 1;
 						//И общее количество элементов
 						$resTemp[$key]['total'] = $total;
 						$resTemp[$key]['resultTotal'] = $resultTotal;
