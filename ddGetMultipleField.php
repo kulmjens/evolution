@@ -50,16 +50,18 @@ if (isset($docField)){
 }
 
 //Если задано значение поля
-if (isset($string) && $string != ""){
-	$rowDelimiter = isset($rowDelimiter) ? $rowDelimiter : '||';
-	$colDelimiter = isset($colDelimiter) ? $colDelimiter : '::';
+if (isset($string) && strlen($string) > 0){
+	if (!isset($rowDelimiter)){$rowDelimiter = '||';}
+	if (!isset($colDelimiter)){$colDelimiter = '::';}
+	
 	//Являются ли разделители регулярками
-	$splYisRegexp = (filter_var($rowDelimiter, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^\/.*\/[a-z]*$/'))) !== false) ? true : false;
-	$splXisRegexp = (filter_var($colDelimiter, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^\/.*\/[a-z]*$/'))) !== false) ? true : false;
-	$startRow = (!isset($startRow) || !is_numeric($startRow)) ? '0' : $startRow;
+	$rowDelimiterIsRegexp = (filter_var($rowDelimiter, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^\/.*\/[a-z]*$/'))) !== false) ? true : false;
+	$colDelimiterIsRegexp = (filter_var($colDelimiter, FILTER_VALIDATE_REGEXP, array('options' => array('regexp' => '/^\/.*\/[a-z]*$/'))) !== false) ? true : false;
+	
+	if (!isset($startRow) || !is_numeric($startRow)){$startRow = '0';}
 	
 	//Если заданы условия фильтрации
-	if (!empty($filter)){
+	if (isset($filter)){
 		//Разбиваем по условиям
 		$temp = explode('||', $filter);
 		
@@ -69,7 +71,7 @@ if (isset($string) && $string != ""){
 			//Разбиваем по колонке/значению
 			$val = explode('::', $val);
 			
-			//Если указали просто значение (значит, это нулевая колонка)
+			//Если указали просто значение (значит, это нулевая колонка) TODO: Удалить через пару версий.
 			if (count($val) < 2){
 				$val[1] = $val[0];
 				$val[0] = '0';
@@ -87,14 +89,14 @@ if (isset($string) && $string != ""){
 		$filter = false;
 	}
 	
-	$totalRows = (!isset($totalRows) || !is_numeric($totalRows)) ? 'all' : $totalRows;
+	if (!isset($totalRows) || !is_numeric($totalRows)){$totalRows = 'all';}
 	$columns = isset($columns) ? explode(',', $columns) : 'all';
 	//Хитро-мудро для array_intersect_key
-	if (is_array($columns)) $columns = array_combine($columns, $columns);
+	if (is_array($columns)){$columns = array_combine($columns, $columns);}
 	$sortDir = isset($sortDir) ? strtoupper($sortDir) : false;
-	$sortBy = isset($sortBy) ? $sortBy : '0';
-	$rowGlue = isset($rowGlue) ? $rowGlue : '';
-	$colGlue = isset($colGlue) ? $colGlue : '';
+	if (!isset($sortBy)){$sortBy = '0';}
+	if (!isset($rowGlue)){$rowGlue = '';}
+	if (!isset($colGlue)){$colGlue = '';}
 	$removeEmptyRows = (isset($removeEmptyRows) && $removeEmptyRows == '0') ? false : true;
 	$removeEmptyCols = (isset($removeEmptyCols) && $removeEmptyCols == '0') ? false : true;
 	$urlencode = (isset($urlencode) && $urlencode == '1') ? true : false;
@@ -102,21 +104,21 @@ if (isset($string) && $string != ""){
 	$colTpl = isset($colTpl) ? explode(',', $colTpl) : false;
 	
 	//Разбиваем на строки
-	$res = $splYisRegexp ? preg_split($rowDelimiter, $string) : explode($rowDelimiter, $string);
-
+	$res = $rowDelimiterIsRegexp ? preg_split($rowDelimiter, $string) : explode($rowDelimiter, $string);
+	
 	//Общее количество строк
 	$total = count($res);
 	
 	//Перебираем строки, разбиваем на колонки
 	foreach ($res as $key => $val){
-		$res[$key] = $splXisRegexp ? preg_split($colDelimiter, $val) : explode($colDelimiter, $val);
+		$res[$key] = $colDelimiterIsRegexp ? preg_split($colDelimiter, $val) : explode($colDelimiter, $val);
 		
 		//Если необходимо получить какие-то конкретные значения
-		if ($filter){
+		if ($filter !== false){
 			//Перебираем колонки для фильтрации
-			foreach ($filter as $col_k => $col_v){
+			foreach ($filter as $k => $v){
 				//Если текущего значения в списке нет, сносим нафиг
-				if (!in_array($res[$key][$col_k], $col_v)){
+				if (!in_array($res[$key][$k], $v)){
 					unset($res[$key]);
 					//Уходим (строку уже снесли, больше ничего не важно)
 					break;
@@ -133,7 +135,7 @@ if (isset($string) && $string != ""){
 		//Если нужно удалять пустые строки (также проверяем на то, что строка вообще существует, т.к. она могла быть уже удалена ранее)
 		if ($removeEmptyRows && isset($res[$key])){
 			//Если строка пустая, удаляем
-			if (strlen(implode('', $res[$key])) == 0) unset($res[$key]);
+			if (strlen(implode('', $res[$key])) == 0){unset($res[$key]);}
 		}
 	}
 	
@@ -141,7 +143,7 @@ if (isset($string) && $string != ""){
 	$res = array_values($res);
 	
 	//Если шаблоны колонок заданы, но их не хватает
-	if ($colTpl){
+	if ($colTpl !== false){
 		if (($temp = count($res[0]) - count($colTpl)) > 0){
 			//Дозабьём недостающие последним
 			$colTpl = array_merge($colTpl, array_fill($temp - 1, $temp, $colTpl[count($colTpl) - 1]));
@@ -151,11 +153,11 @@ if (isset($string) && $string != ""){
 	}
 	
 	$result = '';
-
+	
 	//Если что-то есть (могло ничего не остаться после удаления пустых и/или получения по значениям)
 	if (count($res) > 0){
 		//Если надо сортировать
-		if ($sortDir){
+		if ($sortDir !== false){
 			//Если надо в случайном порядке - шафлим
 			if ($sortDir == 'RAND'){
 				shuffle($res);
@@ -169,7 +171,7 @@ if (isset($string) && $string != ""){
 		}
 		
 		//Обрабатываем слишком большой индекс
-		if (!$res[$startRow]) $startRow = count($res) - 1;
+		if (!isset($res[$startRow])){$startRow = count($res) - 1;}
 		
 		//Если нужны все элементы
 		if ($totalRows == 'all'){
@@ -182,7 +184,7 @@ if (isset($string) && $string != ""){
 		$resultTotal = count($res);
 		
 		//Плэйсхолдер с общим количеством
-		if (isset($totalRowsToPlaceholder) && strlen(trim($totalRowsToPlaceholder)) != ''){
+		if (isset($totalRowsToPlaceholder)){
 			$modx->setPlaceholder($totalRowsToPlaceholder, $resultTotal);
 		}
 		
@@ -222,6 +224,7 @@ if (isset($string) && $string != ""){
 					//Перебираем строки
 					foreach ($res as $key => $val){
 						$resTemp[$key] = array();
+						
 						//Перебираем колонки
 						foreach ($val as $k => $v){
 							//Если нужно удалять пустые значения
@@ -229,13 +232,14 @@ if (isset($string) && $string != ""){
 								$resTemp[$key]['val'.$k] = '';
 							}else{
 								//Если есть шаблоны значений колонок
-								if ($colTpl && strlen($colTpl[$k])){
+								if ($colTpl !== false && strlen($colTpl[$k]) > 0){
 									$resTemp[$key]['val'.$k] = $modx->parseChunk($colTpl[$k], array('val' => $v), '[+', '+]');
 								}else{
 									$resTemp[$key]['val'.$k] = $v;
 								}
 							}
 						}
+						
 						//Запишем номер строки
 						$resTemp[$key]['row_number'] = $key + 1;
 						//И общее количество элементов
@@ -246,13 +250,12 @@ if (isset($string) && $string != ""){
 				}else{
 					foreach ($res as $key => $val){
 						//Если есть шаблоны значений колонок
-						if ($colTpl){
+						if ($colTpl !== false){
 							foreach ($val as $k => $v){
 								if ($removeEmptyCols && !strlen($v)){
 									unset($val[$k]);
-								}else{
-									if ($colTpl && strlen($colTpl[$k]))
-										$val[$k] = $modx->parseChunk($colTpl[$k], array('val' => $v), '[+', '+]');
+								}else if (strlen($colTpl[$k]) > 0){
+									$val[$k] = $modx->parseChunk($colTpl[$k], array('val' => $v), '[+', '+]');
 								}
 							}
 						}
@@ -312,7 +315,7 @@ if (isset($string) && $string != ""){
 				$resTemp['resultTotal'] = $resultTotal;
 				$result = $modx->parseChunk($outerTpl, $resTemp, '[+','+]');
 			}
-	
+			
 			//Если нужно URL-кодировать строку
 			if ($urlencode){
 				$result = rawurlencode($result);
