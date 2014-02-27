@@ -26,7 +26,7 @@
  * @param $outputFormat {'html'; 'JSON'; 'array'} - Result output format. Default: 'html'.
  * @param $rowGlue {string} - The string that combines rows while rendering. It can be used along with “rowTpl”. Default: ''.
  * @param $colGlue {string} - The string that combines columns while rendering. It can be used along with “colTpl”, but not with “rowTpl” for obvious reasons. Default: ''.
- * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+val0+],[+val1+],… (column values). Default: ''.
+ * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+col0+],[+col1+],… (column values). Default: ''.
  * @param $colTpl {comma separated string: chunkName; 'null'} - The comma-separated list of templates for column rendering (“outputFormat” has to be == 'html'). If the number of templates is lesser than the number of columns then the last passed template will be used to render the rest of the columns. 'null' specifies rendering without a template. Available placeholder: [+val+]. Default: ''.
  * @param $outerTpl {string: chunkName} - Wrapper template (“outputFormat” has to be != 'array'). Available placeholders: [+wrapper+], [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+rowY.colX+] (“Y” — row number, “X” — column number). Default: ''.
  * @param $placeholders {separated string} - Additional data has to be passed into “outerTpl”. Syntax: string separated with '::' between key and value and '||' between key-value pairs. Default: ''.
@@ -229,13 +229,13 @@ if (isset($string) && strlen($string) > 0){
 						foreach ($val as $k => $v){
 							//Если нужно удалять пустые значения
 							if ($removeEmptyCols && !strlen($v)){
-								$resTemp[$key]['val'.$k] = '';
+								$resTemp[$key]['col'.$k] = '';
 							}else{
 								//Если есть шаблоны значений колонок
 								if ($colTpl !== false && strlen($colTpl[$k]) > 0){
-									$resTemp[$key]['val'.$k] = $modx->parseChunk($colTpl[$k], array('val' => $v), '[+', '+]');
+									$resTemp[$key]['col'.$k] = $modx->parseChunk($colTpl[$k], array('val' => $v), '[+', '+]');
 								}else{
-									$resTemp[$key]['val'.$k] = $v;
+									$resTemp[$key]['col'.$k] = $v;
 								}
 							}
 						}
