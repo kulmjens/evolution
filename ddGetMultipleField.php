@@ -28,7 +28,7 @@
  * @param $colGlue {string} - The string that combines columns while rendering. It can be used along with “colTpl”, but not with “rowTpl” for obvious reasons. Default: ''.
  * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+val0+],[+val1+],… (column values). Default: ''.
  * @param $colTpl {comma separated string: chunkName; 'null'} - The comma-separated list of templates for column rendering (“outputFormat” has to be == 'html'). If the number of templates is lesser than the number of columns then the last passed template will be used to render the rest of the columns. 'null' specifies rendering without a template. Available placeholder: [+val+]. Default: ''.
- * @param $outerTpl {string: chunkName} - Wrapper template (“outputFormat” has to be != 'array'). Available placeholders: [+wrapper+], [+total+] (total number or rows), [+resultTotal+] (total number of returned rows). Default: ''.
+ * @param $outerTpl {string: chunkName} - Wrapper template (“outputFormat” has to be != 'array'). Available placeholders: [+wrapper+], [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+rowY.colX+] (“Y” — row number, “X” — column number). Default: ''.
  * @param $placeholders {separated string} - Additional data has to be passed into “outerTpl”. Syntax: string separated with '::' between key and value and '||' between key-value pairs. Default: ''.
  * @param $urlencode {0; 1} - Is it required to URL encode the result? “outputFormat” has to be != 'array'. URL encoding is used according to RFC 3986. Default: 0.
  * @param $totalRowsToPlaceholder {string} - The name of the global MODX placeholder that holds the total number of rows. The placeholder won't be set if “totalRowsToPlaceholder” is empty. Default: ''.
@@ -303,7 +303,7 @@ if (isset($string) && strlen($string) > 0){
 				
 				//Добавляем 'row' и 'val' к ключам
 				foreach ($res as $key => $val){
-					 $resTemp[preg_replace('/(\d)\.(\d)/', 'row$1.val$2', $key)] = $val;
+					 $resTemp[preg_replace('/(\d)\.(\d)/', 'row$1.col$2', $key)] = $val;
 				}
 				
 				//Если есть дополнительные данные
