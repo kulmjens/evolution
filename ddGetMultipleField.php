@@ -1,7 +1,7 @@
 <?php
 /**
  * ddGetMultipleField.php
- * @version 2.18 (2013-11-11)
+ * @version 3.0b (2014-03-02)
  * 
  * A snippet for separated by delimiters data output.
  * The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
@@ -34,7 +34,7 @@
  * @param $totalRowsToPlaceholder {string} - The name of the global MODX placeholder that holds the total number of rows. The placeholder won't be set if “totalRowsToPlaceholder” is empty. Default: ''.
  * @param $resultToPlaceholder {string} - The name of the global MODX placeholder that holds the snippet result. The result will be returned in a regular manner if the parameter is empty. Default: ''.
  * 
- * @link http://code.divandesign.biz/modx/ddgetmultiplefield/2.18
+ * @link http://code.divandesign.biz/modx/ddgetmultiplefield/3.0b
  * 
  * @copyright 2013, DivanDesign
  * http://www.DivanDesign.biz
