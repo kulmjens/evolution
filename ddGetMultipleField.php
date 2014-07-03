@@ -23,7 +23,7 @@
  * @param $sortBy {comma separated string} - The index of the column to sort by (indexes start at 0). The parameter also takes comma-separated values for multiple sort, e.g. '0,1'. Default: '0'.
  * @param $sortDir {'ASC'; 'DESC'; 'RAND'; 'REVERSE'; ''} - Rows sorting direction. The rows will be returned in reversed order if “sortDir” == 'REVERSE'. Default: ''.
  * @param $typography {comma separated string} - The comma separated indexes of the columns which values have to be corrected (indexes start at 0). If unset, there will be no correction. Default: —.
- * @param $outputFormat {'html'; 'JSON'; 'array'} - Result output format. Default: 'html'.
+ * @param $outputFormat {'html'; 'JSON'; 'array'; 'htmlarray'} - Result output format. Default: 'html'.
  * @param $rowGlue {string} - The string that combines rows while rendering. It can be used along with “rowTpl”. Default: ''.
  * @param $colGlue {string} - The string that combines columns while rendering. It can be used along with “colTpl”, but not with “rowTpl” for obvious reasons. Default: ''.
  * @param $rowTpl {string: chunkName} - The template for row rendering (“outputFormat” has to be == 'html'). Available placeholders: [+rowNumber+] (index of current row, starts at 1), [+total+] (total number of rows), [+resultTotal+] (total number of returned rows), [+col0+],[+col1+],… (column values). Default: ''.
@@ -211,7 +211,7 @@ if (isset($string) && strlen($string) > 0){
 			$resTemp = array();
 			
 			//Если вывод просто в формате html
-			if ($outputFormat == 'html'){
+			if ($outputFormat == 'html' || $outputFormat == 'htmlarray'){
 				/*//Если вывод в формате изображения
 				 if ($outputFormat == 'img'){
 				foreach ($res as $key => $val) $res[$key] = '<img src="'.$val['val1'].'" alt="'.$val['val0'].'" />';
@@ -263,7 +263,11 @@ if (isset($string) && strlen($string) > 0){
 					}
 				}
 				
-				$result = implode($rowGlue, $resTemp);
+				if ($outputFormat == 'html'){
+					$result = implode($rowGlue, $resTemp);
+				}else{
+					$result = $resTemp;
+				}
 			//Если вывод в формате JSON
 			}else if ($outputFormat == 'json'){
 				//Добавляем 'val' к названиям колонок
@@ -272,7 +276,6 @@ if (isset($string) && strlen($string) > 0){
 					//Перебираем колонки
 					foreach ($val as $k => $v) $res[$key]['val'.$k] = $v;
 				} */
-				
 				$resTemp = $res;
 				
 				//Если нужно выводить только одну колонку
