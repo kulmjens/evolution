@@ -1,10 +1,10 @@
 <?php
 /**
  * ddGetMultipleField.php
- * @version 3.0b (2014-03-02)
+ * @version 3.1 (2014-07-03)
  * 
- * A snippet for separated by delimiters data output.
- * The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
+ * @desc A snippet for separated by delimiters data output.
+ * @note The fields formed by the mm_ddMultipleFields widget values ooutput gets more convinient with the snippet.
  * 
  * @uses The library modx.ddTools 0.11.
  * @uses The snippet ddTypograph 1.4.3 (if typographing is required).
@@ -34,9 +34,9 @@
  * @param $totalRowsToPlaceholder {string} - The name of the global MODX placeholder that holds the total number of rows. The placeholder won't be set if “totalRowsToPlaceholder” is empty. Default: ''.
  * @param $resultToPlaceholder {string} - The name of the global MODX placeholder that holds the snippet result. The result will be returned in a regular manner if the parameter is empty. Default: ''.
  * 
- * @link http://code.divandesign.biz/modx/ddgetmultiplefield/3.0b
+ * @link http://code.divandesign.biz/modx/ddgetmultiplefield/3.1
  * 
- * @copyright 2013, DivanDesign
+ * @copyright 2014, DivanDesign
  * http://www.DivanDesign.biz
  */
 
@@ -212,14 +212,6 @@ if (isset($string) && strlen($string) > 0){
 			
 			//Если вывод просто в формате html
 			if ($outputFormat == 'html' || $outputFormat == 'htmlarray'){
-				/*//Если вывод в формате изображения
-				 if ($outputFormat == 'img'){
-				foreach ($res as $key => $val) $res[$key] = '<img src="'.$val['val1'].'" alt="'.$val['val0'].'" />';
-				//Если вывод в формате ссылки
-				}else if ($outputFormat == 'link'){
-				foreach ($res as $key => $val) $res[$key] = '<a href="'.$val['val1'].'">'.$val['val0'].'</a>';
-				//Если вывод по шаблону
-				}else */
 				if (isset($rowTpl)){
 					//Перебираем строки
 					foreach ($res as $key => $val){
@@ -270,12 +262,6 @@ if (isset($string) && strlen($string) > 0){
 				}
 			//Если вывод в формате JSON
 			}else if ($outputFormat == 'json'){
-				//Добавляем 'val' к названиям колонок
-	/* 			foreach ($res as $key => $val){
-					$res[$key] = array();
-					//Перебираем колонки
-					foreach ($val as $k => $v) $res[$key]['val'.$k] = $v;
-				} */
 				$resTemp = $res;
 				
 				//Если нужно выводить только одну колонку
